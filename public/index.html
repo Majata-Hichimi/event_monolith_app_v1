@@ -3,364 +3,242 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Event Management UI</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js"></script>
+    <title>Eventful - Event Management Platform</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      :root {
+        --purple-primary: #6b21a8;
+        --purple-dark: #581c87;
+        --purple-light: #9333ea;
+        --purple-lighter: #a855f7;
+        --yellow-accent: #fbbf24;
+        --yellow-dark: #f59e0b;
+        --teal-accent: #14b8a6;
+        --bg-dark: #1a0b2e;
+        --bg-darker: #120821;
+        --text-primary: #f3f4f6;
+        --text-secondary: #d1d5db;
+        --text-muted: #9ca3af;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+        background: linear-gradient(
+          135deg,
+          var(--bg-darker) 0%,
+          var(--bg-dark) 100%
+        );
+        color: var(--text-primary);
+        line-height: 1.6;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .container {
+        max-width: 1200px;
+        width: 100%;
+        padding: 40px 20px;
+        text-align: center;
+      }
+
+      .logo {
+        font-size: 4rem;
+        font-weight: 800;
+        background: linear-gradient(
+          135deg,
+          var(--purple-light),
+          var(--purple-lighter)
+        );
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        margin-bottom: 24px;
+        letter-spacing: -2px;
+      }
+
+      .tagline {
+        font-size: 1.5rem;
+        color: var(--text-secondary);
+        margin-bottom: 60px;
+        font-weight: 300;
+      }
+
+      .btn-group {
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+        margin-bottom: 80px;
+        flex-wrap: wrap;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        padding: 16px 40px;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: none;
+        text-decoration: none;
+        font-family: inherit;
+      }
+
+      .btn-yellow {
+        background: var(--yellow-accent);
+        color: var(--bg-darker);
+      }
+
+      .btn-yellow:hover {
+        background: var(--yellow-dark);
+        transform: translateY(-3px);
+        box-shadow: 0 10px 30px rgba(251, 191, 36, 0.4);
+      }
+
+      .btn-outline {
+        background: transparent;
+        border: 2px solid var(--purple-lighter);
+        color: var(--text-primary);
+      }
+
+      .btn-outline:hover {
+        background: rgba(168, 85, 247, 0.1);
+        border-color: var(--purple-light);
+        transform: translateY(-3px);
+        box-shadow: 0 10px 30px rgba(168, 85, 247, 0.3);
+      }
+
+      .footer {
+        color: var(--text-muted);
+        font-size: 0.95rem;
+      }
+
+      .page-links {
+        margin-top: 60px;
+        padding-top: 40px;
+        border-top: 1px solid rgba(168, 85, 247, 0.2);
+      }
+
+      .page-links h3 {
+        color: var(--text-secondary);
+        margin-bottom: 20px;
+        font-size: 1.2rem;
+      }
+
+      .links-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+        max-width: 800px;
+        margin: 0 auto;
+      }
+
+      .page-link {
+        background: rgba(168, 85, 247, 0.1);
+        border: 1px solid var(--purple-primary);
+        padding: 16px;
+        border-radius: 12px;
+        color: var(--text-primary);
+        text-decoration: none;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        justify-content: center;
+      }
+
+      .page-link:hover {
+        background: rgba(168, 85, 247, 0.2);
+        border-color: var(--purple-light);
+        transform: translateX(5px);
+      }
+
+      .page-link i {
+        color: var(--yellow-accent);
+      }
+
+      @media (max-width: 640px) {
+        .logo {
+          font-size: 2.5rem;
+        }
+
+        .tagline {
+          font-size: 1.1rem;
+        }
+
+        .btn-group {
+          flex-direction: column;
+          max-width: 300px;
+          margin: 0 auto 60px;
+        }
+
+        .links-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
   </head>
-  <body class="bg-gray-50 text-gray-800">
-    <!-- Authentication Section -->
-    <div
-      id="auth-view"
-      class="min-h-screen flex flex-col justify-center items-center p-6"
-    >
-      <div class="w-full max-w-sm bg-white p-6 rounded-2xl shadow-md">
-        <h1 class="text-2xl font-bold text-center mb-6 text-blue-600">
-          Event Management
-        </h1>
-        <div class="flex mb-4">
-          <button
-            id="login-tab"
-            class="w-1/2 py-2 font-semibold border-b-2 border-blue-600"
-          >
-            Login
-          </button>
-          <button
-            id="signup-tab"
-            class="w-1/2 py-2 font-semibold border-b-2 border-transparent"
-          >
-            Sign Up
-          </button>
+  <body>
+    <div class="container">
+      <h1 class="logo">Eventful</h1>
+      <p class="tagline">Discover, Join, and Track Your Events Effortlessly</p>
+
+      <div class="btn-group">
+        <a href="login.html" class="btn btn-yellow">
+          <i class="fas fa-sign-in-alt"></i>
+          Login
+        </a>
+        <a href="signup.html" class="btn btn-outline">
+          <i class="fas fa-user-plus"></i>
+          Create Account
+        </a>
+      </div>
+
+      <div class="page-links">
+        <h3>Quick Access Pages</h3>
+        <div class="links-grid">
+          <a href="dashboard.html" class="page-link">
+            <i class="fas fa-home"></i>
+            Dashboard
+          </a>
+          <a href="events.html" class="page-link">
+            <i class="fas fa-calendar-alt"></i>
+            Events
+          </a>
+          <a href="create-event.html" class="page-link">
+            <i class="fas fa-plus-circle"></i>
+            Create Event
+          </a>
+          <a href="rsvps.html" class="page-link">
+            <i class="fas fa-clipboard-list"></i>
+            RSVPs
+          </a>
         </div>
+      </div>
 
-        <!-- Login Form -->
-        <form id="login-form" class="space-y-4">
-          <input
-            type="email"
-            id="login-email"
-            placeholder="Email"
-            required
-            class="w-full px-3 py-2 border rounded-lg"
-          />
-          <input
-            type="password"
-            id="login-password"
-            placeholder="Password"
-            required
-            class="w-full px-3 py-2 border rounded-lg"
-          />
-          <button
-            type="submit"
-            class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
-          >
-            Login
-          </button>
-          <p id="login-error" class="text-red-500 text-sm"></p>
-        </form>
-
-        <!-- Sign Up Form -->
-        <form id="signup-form" class="space-y-4 hidden">
-          <input
-            type="email"
-            id="signup-email"
-            placeholder="Email"
-            required
-            class="w-full px-3 py-2 border rounded-lg"
-          />
-          <input
-            type="password"
-            id="signup-password"
-            placeholder="Password"
-            required
-            class="w-full px-3 py-2 border rounded-lg"
-          />
-          <select id="signup-role" class="w-full px-3 py-2 border rounded-lg">
-            <option value="ATTENDEE">Attendee</option>
-            <option value="ORGANIZER">Organizer</option>
-          </select>
-          <button
-            type="submit"
-            class="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700"
-          >
-            Sign Up
-          </button>
-          <p id="signup-error" class="text-red-500 text-sm"></p>
-        </form>
+      <div class="footer">
+        <p>© 2025 Event Management App. All rights reserved.</p>
       </div>
     </div>
-
-    <!-- Main App Section -->
-    <div id="main-view" class="hidden min-h-screen p-4">
-      <div class="flex justify-between items-center mb-4">
-        <h2 class="text-2xl font-semibold text-blue-600">Events</h2>
-        <button
-          id="logout-btn"
-          class="text-sm bg-gray-200 px-3 py-1 rounded hover:bg-gray-300"
-        >
-          Logout
-        </button>
-      </div>
-      <div
-        id="events-container"
-        class="grid gap-4 md:grid-cols-2 lg:grid-cols-3"
-      ></div>
-
-      <!-- Create Event Button -->
-      <button
-        id="create-event-btn"
-        class="hidden fixed bottom-6 right-6 bg-blue-600 text-white p-4 rounded-full shadow-lg hover:bg-blue-700"
-      >
-        +
-      </button>
-    </div>
-
-    <!-- Create Event Modal -->
-    <div
-      id="create-event-modal"
-      class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
-    >
-      <div class="bg-white p-6 rounded-2xl w-full max-w-md">
-        <h3 class="text-xl font-semibold mb-4 text-blue-600">
-          Create New Event
-        </h3>
-        <form id="create-event-form" class="space-y-3">
-          <input
-            type="text"
-            id="event-title"
-            placeholder="Event Title"
-            required
-            class="w-full px-3 py-2 border rounded-lg"
-          />
-          <input
-            type="text"
-            id="event-location"
-            placeholder="Location"
-            required
-            class="w-full px-3 py-2 border rounded-lg"
-          />
-          <input
-            type="date"
-            id="event-date"
-            required
-            class="w-full px-3 py-2 border rounded-lg"
-          />
-          <textarea
-            id="event-description"
-            placeholder="Description"
-            class="w-full px-3 py-2 border rounded-lg"
-          ></textarea>
-          <div class="flex justify-end gap-2">
-            <button
-              type="button"
-              id="cancel-create"
-              class="px-4 py-2 bg-gray-300 rounded-lg"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-            >
-              Create
-            </button>
-          </div>
-          <p id="create-event-error" class="text-red-500 text-sm"></p>
-        </form>
-      </div>
-    </div>
-
-    <script>
-      const API_BASE = "http://localhost:3000";
-      let userToken = null;
-      let userRole = null;
-      let socket = null;
-
-      // Element references
-      const authView = document.getElementById("auth-view");
-      const mainView = document.getElementById("main-view");
-      const loginTab = document.getElementById("login-tab");
-      const signupTab = document.getElementById("signup-tab");
-      const loginForm = document.getElementById("login-form");
-      const signupForm = document.getElementById("signup-form");
-      const createBtn = document.getElementById("create-event-btn");
-      const createModal = document.getElementById("create-event-modal");
-      const createForm = document.getElementById("create-event-form");
-      const cancelCreate = document.getElementById("cancel-create");
-      const eventsContainer = document.getElementById("events-container");
-      const logoutBtn = document.getElementById("logout-btn");
-
-      // Tab switching
-      loginTab.onclick = () => {
-        loginTab.classList.add("border-blue-600");
-        signupTab.classList.remove("border-blue-600");
-        loginForm.classList.remove("hidden");
-        signupForm.classList.add("hidden");
-      };
-      signupTab.onclick = () => {
-        signupTab.classList.add("border-blue-600");
-        loginTab.classList.remove("border-blue-600");
-        signupForm.classList.remove("hidden");
-        loginForm.classList.add("hidden");
-      };
-
-      // Authentication
-      loginForm.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const email = document.getElementById("login-email").value;
-        const password = document.getElementById("login-password").value;
-        const errorEl = document.getElementById("login-error");
-        errorEl.textContent = "";
-
-        try {
-          const res = await fetch(`${API_BASE}/login`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email, password }),
-          });
-          const data = await res.json();
-          if (!res.ok) throw new Error(data.error || "Login failed");
-          userToken = data.token;
-          userRole = data.role;
-          window.userToken = userToken;
-          authView.classList.add("hidden");
-          mainView.classList.remove("hidden");
-          if (userRole === "ORGANIZER" || userRole === "ADMIN")
-            createBtn.classList.remove("hidden");
-          connectWebSocket();
-          fetchEvents();
-        } catch (err) {
-          errorEl.textContent = err.message;
-        }
-      });
-
-      signupForm.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const email = document.getElementById("signup-email").value;
-        const password = document.getElementById("signup-password").value;
-        const role = document.getElementById("signup-role").value;
-        const errorEl = document.getElementById("signup-error");
-        errorEl.textContent = "";
-
-        try {
-          const res = await fetch(`${API_BASE}/signup`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email, password, role }),
-          });
-          const data = await res.json();
-          if (!res.ok) throw new Error(data.error || "Signup failed");
-          alert("Account created! You can now login.");
-          signupTab.click();
-        } catch (err) {
-          errorEl.textContent = err.message;
-        }
-      });
-
-      // Logout
-      logoutBtn.onclick = () => {
-        userToken = null;
-        userRole = null;
-        if (socket) socket.close();
-        mainView.classList.add("hidden");
-        authView.classList.remove("hidden");
-      };
-
-      // Fetch Events
-      async function fetchEvents() {
-        try {
-          const res = await fetch(`${API_BASE}/events`, {
-            headers: { Authorization: `Bearer ${userToken}` },
-          });
-          const events = await res.json();
-          renderEvents(events);
-        } catch (err) {
-          console.error("Failed to fetch events", err);
-        }
-      }
-
-      // Render Event Cards
-      function renderEvents(events) {
-        eventsContainer.innerHTML = "";
-        events.forEach((evt) => {
-          const card = document.createElement("div");
-          card.className =
-            "bg-white p-4 rounded-xl shadow hover:shadow-lg transition";
-          card.innerHTML = `
-          <h3 class="text-lg font-semibold text-blue-600">${evt.title}</h3>
-          <p class="text-sm text-gray-600">${new Date(
-            evt.date
-          ).toLocaleString()}</p>
-          <p class="text-sm">${evt.location}</p>
-          <p class="text-sm mt-1">Status: ${
-            evt.approved ? "✅ Approved" : "⏳ Pending"
-          }</p>
-          ${
-            userRole === "ATTENDEE"
-              ? `<button class="rsvp-btn mt-2 bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700" data-id="${evt.id}">RSVP</button>`
-              : ""
-          }
-        `;
-          eventsContainer.appendChild(card);
-        });
-
-        document.querySelectorAll(".rsvp-btn").forEach((btn) => {
-          btn.onclick = async () => {
-            const id = btn.dataset.id;
-            try {
-              await fetch(`${API_BASE}/events/${id}/rsvp`, {
-                method: "POST",
-                headers: { Authorization: `Bearer ${userToken}` },
-              });
-              fetchEvents();
-            } catch {
-              alert("RSVP failed");
-            }
-          };
-        });
-      }
-
-      // Create Event
-      createBtn.onclick = () => createModal.classList.remove("hidden");
-      cancelCreate.onclick = () => createModal.classList.add("hidden");
-
-      createForm.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const title = document.getElementById("event-title").value;
-        const date = document.getElementById("event-date").value;
-        const location = document.getElementById("event-location").value;
-        const description = document.getElementById("event-description").value;
-        const errorEl = document.getElementById("create-event-error");
-        errorEl.textContent = "";
-
-        try {
-          const res = await fetch(`${API_BASE}/events`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${userToken}`,
-            },
-            body: JSON.stringify({ title, date, location, description }),
-          });
-          const data = await res.json();
-          if (!res.ok) throw new Error(data.error || "Create failed");
-          createModal.classList.add("hidden");
-          createForm.reset();
-          fetchEvents();
-        } catch (err) {
-          errorEl.textContent = err.message;
-        }
-      });
-
-      // WebSocket Connection
-      function connectWebSocket() {
-        socket = new WebSocket("ws://localhost:3000/ws");
-        socket.onopen = () => console.log("Connected to WS");
-        socket.onmessage = (msg) => {
-          console.log("WS update:", msg.data);
-          fetchEvents();
-        };
-        socket.onclose = () => console.log("WS closed");
-      }
-    </script>
   </body>
 </html>

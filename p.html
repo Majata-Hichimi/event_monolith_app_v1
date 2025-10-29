@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Event Management UI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-50 text-gray-800">
+    <!-- Authentication Section -->
+    <div
+      id="auth-view"
+      class="min-h-screen flex flex-col justify-center items-center p-6"
+    >
+      <div class="w-full max-w-sm bg-white p-6 rounded-2xl shadow-md">
+        <h1 class="text-2xl font-bold text-center mb-6 text-blue-600">
+          Event Management
+        </h1>
+        <div class="flex mb-4">
+          <button
+            id="login-tab"
+            class="w-1/2 py-2 font-semibold border-b-2 border-blue-600 text-blue-600"
+          >
+            Login
+          </button>
+          <button
+            id="signup-tab"
+            class="w-1/2 py-2 font-semibold border-b-2 border-transparent text-gray-500"
+          >
+            Sign Up
+          </button>
+        </div>
+
+        <!-- Login Form -->
+        <form id="login-form" class="space-y-4">
+          <input
+            type="email"
+            id="login-email"
+            placeholder="Email"
+            required
+            class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <input
+            type="password"
+            id="login-password"
+            placeholder="Password"
+            required
+            class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <button
+            type="submit"
+            class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
+          >
+            Login
+          </button>
+          <p id="login-error" class="text-red-500 text-sm text-center"></p>
+        </form>
+
+        <!-- Sign Up Form -->
+        <form id="signup-form" class="space-y-4 hidden">
+          <input
+            type="email"
+            id="signup-email"
+            placeholder="Email"
+            required
+            class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+          />
+          <input
+            type="password"
+            id="signup-password"
+            placeholder="Password (min 6 characters)"
+            required
+            minlength="6"
+            class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+          />
+          <select
+            id="signup-role"
+            class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+          >
+            <option value="ATTENDEE">Attendee</option>
+            <option value="ORGANIZER">Organizer</option>
+          </select>
+          <button
+            type="submit"
+            class="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition"
+          >
+            Sign Up
+          </button>
+          <p id="signup-error" class="text-red-500 text-sm text-center"></p>
+        </form>
+      </div>
+    </div>
+
+    <!-- Main App Section -->
+    <div id="main-view" class="hidden min-h-screen p-4">
+      <div class="flex justify-between items-center mb-6">
+        <div>
+          <h2 class="text-2xl font-semibold text-blue-600">Events</h2>
+          <p id="user-info" class="text-sm text-gray-600 mt-1"></p>
+        </div>
+        <button
+          id="logout-btn"
+          class="text-sm bg-gray-200 px-4 py-2 rounded hover:bg-gray-300 transition"
+        >
+          Logout
+        </button>
+      </div>
+
+      <div id="loading" class="text-center py-8 text-gray-500">
+        Loading events...
+      </div>
+
+      <div
+        id="events-container"
+        class="grid gap-4 md:grid-cols-2 lg:grid-cols-3"
+      ></div>
+
+      <div id="no-events" class="hidden text-center py-12 text-gray-500">
+        <p class="text-lg mb-2">No events found</p>
+        <p class="text-sm">Be the first to create an event!</p>
+      </div>
+
+      <!-- Create Event Button -->
+      <button
+        id="create-event-btn"
+        class="hidden fixed bottom-6 right-6 bg-blue-600 text-white w-14 h-14 rounded-full shadow-lg hover:bg-blue-700 transition text-2xl"
+      >
+        +
+      </button>
+    </div>
+
+    <!-- Create Event Modal -->
+    <div
+      id="create-event-modal"
+      class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+    >
+      <div class="bg-white p-6 rounded-2xl w-full max-w-md">
+        <h3 class="text-xl font-semibold mb-4 text-blue-600">
+          Create New Event
+        </h3>
+        <form id="create-event-form" class="space-y-3">
+          <input
+            type="text"
+            id="event-title"
+            placeholder="Event Title"
+            required
+            class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <input
+            type="text"
+            id="event-location"
+            placeholder="Location"
+            required
+            class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <input
+            type="datetime-local"
+            id="event-date"
+            required
+            class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <textarea
+            id="event-description"
+            placeholder="Description"
+            rows="3"
+            class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          ></textarea>
+          <div class="flex justify-end gap-2 pt-2">
+            <button
+              type="button"
+              id="cancel-create"
+              class="px-4 py-2 bg-gray-300 rounded-lg hover:bg-gray-400 transition"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+            >
+              Create
+            </button>
+          </div>
+          <p
+            id="create-event-error"
+            class="text-red-500 text-sm text-center"
+          ></p>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      const API_BASE = "http://localhost:3000";
+      let userToken = null;
+      let userRole = null;
+      let userEmail = null;
+      let socket = null;
+
+      // Element references
+      const authView = document.getElementById("auth-view");
+      const mainView = document.getElementById("main-view");
+      const loginTab = document.getElementById("login-tab");
+      const signupTab = document.getElementById("signup-tab");
+      const loginForm = document.getElementById("login-form");
+      const signupForm = document.getElementById("signup-form");
+      const createBtn = document.getElementById("create-event-btn");
+      const createModal = document.getElementById("create-event-modal");
+      const createForm = document.getElementById("create-event-form");
+      const cancelCreate = document.getElementById("cancel-create");
+      const eventsContainer = document.getElementById("events-container");
+      const loadingEl = document.getElementById("loading");
+      const noEventsEl = document.getElementById("no-events");
+      const logoutBtn = document.getElementById("logout-btn");
+      const userInfo = document.getElementById("user-info");
+
+      // Check for stored token on page load
+      window.addEventListener("DOMContentLoaded", () => {
+        const storedToken = localStorage.getItem("userToken");
+        const storedRole = localStorage.getItem("userRole");
+        const storedEmail = localStorage.getItem("userEmail");
+
+        if (storedToken) {
+          userToken = storedToken;
+          userRole = storedRole;
+          userEmail = storedEmail;
+          showMainView();
+        }
+      });
+
+      // Tab switching
+      loginTab.onclick = () => {
+        loginTab.classList.add("border-blue-600", "text-blue-600");
+        loginTab.classList.remove("text-gray-500");
+        signupTab.classList.remove("border-blue-600", "text-blue-600");
+        signupTab.classList.add("text-gray-500");
+        loginForm.classList.remove("hidden");
+        signupForm.classList.add("hidden");
+        document.getElementById("login-error").textContent = "";
+      };
+
+      signupTab.onclick = () => {
+        signupTab.classList.add("border-blue-600", "text-blue-600");
+        signupTab.classList.remove("text-gray-500");
+        loginTab.classList.remove("border-blue-600", "text-blue-600");
+        loginTab.classList.add("text-gray-500");
+        signupForm.classList.remove("hidden");
+        loginForm.classList.add("hidden");
+        document.getElementById("signup-error").textContent = "";
+      };
+
+      // Authentication - Login
+      loginForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const email = document.getElementById("login-email").value.trim();
+        const password = document.getElementById("login-password").value;
+        const errorEl = document.getElementById("login-error");
+        errorEl.textContent = "";
+
+        try {
+          const res = await fetch(`${API_BASE}/login`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password }),
+          });
+
+          const data = await res.json();
+
+          if (!res.ok) {
+            throw new Error(data.error || data.message || "Login failed");
+          }
+
+          userToken = data.token;
+          userRole = data.role;
+          userEmail = email;
+
+          // Store in localStorage
+          localStorage.setItem("userToken", userToken);
+          localStorage.setItem("userRole", userRole);
+          localStorage.setItem("userEmail", userEmail);
+
+          showMainView();
+        } catch (err) {
+          console.error("Login error:", err);
+          errorEl.textContent =
+            err.message || "Login failed. Please try again.";
+        }
+      });
+
+      // Authentication - Sign Up
+      signupForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const email = document.getElementById("signup-email").value.trim();
+        const password = document.getElementById("signup-password").value;
+        const role = document.getElementById("signup-role").value;
+        const errorEl = document.getElementById("signup-error");
+        errorEl.textContent = "";
+
+        if (password.length < 6) {
+          errorEl.textContent = "Password must be at least 6 characters";
+          return;
+        }
+
+        try {
+          const res = await fetch(`${API_BASE}/signup`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password, role }),
+          });
+
+          const data = await res.json();
+
+          if (!res.ok) {
+            throw new Error(data.error || data.message || "Signup failed");
+          }
+
+          alert("Account created successfully! You can now login.");
+          signupForm.reset();
+          loginTab.click();
+        } catch (err) {
+          console.error("Signup error:", err);
+          errorEl.textContent =
+            err.message || "Signup failed. Please try again.";
+        }
+      });
+
+      // Show main view after login
+      function showMainView() {
+        authView.classList.add("hidden");
+        mainView.classList.remove("hidden");
+
+        userInfo.textContent = `Logged in as ${userEmail} (${userRole})`;
+
+        if (userRole === "ORGANIZER" || userRole === "ADMIN") {
+          createBtn.classList.remove("hidden");
+        }
+
+        connectWebSocket();
+        fetchEvents();
+      }
+
+      // Logout
+      logoutBtn.onclick = () => {
+        userToken = null;
+        userRole = null;
+        userEmail = null;
+        localStorage.removeItem("userToken");
+        localStorage.removeItem("userRole");
+        localStorage.removeItem("userEmail");
+
+        if (socket) {
+          socket.close();
+          socket = null;
+        }
+
+        mainView.classList.add("hidden");
+        authView.classList.remove("hidden");
+        eventsContainer.innerHTML = "";
+        loginForm.reset();
+        signupForm.reset();
+      };
+
+      // Fetch Events
+      async function fetchEvents() {
+        loadingEl.classList.remove("hidden");
+        eventsContainer.classList.add("hidden");
+        noEventsEl.classList.add("hidden");
+
+        try {
+          const res = await fetch(`${API_BASE}/events`, {
+            headers: {
+              Authorization: `Bearer ${userToken}`,
+              "Content-Type": "application/json",
+            },
+          });
+
+          if (!res.ok) {
+            if (res.status === 401) {
+              // Token expired or invalid
+              alert("Session expired. Please login again.");
+              logoutBtn.click();
+              return;
+            }
+            throw new Error("Failed to fetch events");
+          }
+
+          const events = await res.json();
+          renderEvents(events);
+        } catch (err) {
+          console.error("Failed to fetch events", err);
+          loadingEl.textContent = "Failed to load events";
+        }
+      }
+
+      // Render Event Cards
+      function renderEvents(events) {
+        loadingEl.classList.add("hidden");
+        eventsContainer.innerHTML = "";
+
+        if (!events || events.length === 0) {
+          noEventsEl.classList.remove("hidden");
+          return;
+        }
+
+        eventsContainer.classList.remove("hidden");
+
+        events.forEach((evt) => {
+          const card = document.createElement("div");
+          card.className =
+            "bg-white p-4 rounded-xl shadow hover:shadow-lg transition";
+
+          const eventDate = new Date(evt.date);
+          const formattedDate = eventDate.toLocaleDateString("en-US", {
+            weekday: "short",
+            year: "numeric",
+            month: "short",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+          });
+
+          card.innerHTML = `
+            <h3 class="text-lg font-semibold text-blue-600 mb-2">${
+              evt.title
+            }</h3>
+            <p class="text-sm text-gray-600 mb-1">📅 ${formattedDate}</p>
+            <p class="text-sm text-gray-700 mb-1">📍 ${evt.location}</p>
+            ${
+              evt.description
+                ? `<p class="text-sm text-gray-600 mt-2">${evt.description}</p>`
+                : ""
+            }
+            <p class="text-sm mt-2 font-medium ${
+              evt.approved ? "text-green-600" : "text-yellow-600"
+            }">
+              ${evt.approved ? "✅ Approved" : "⏳ Pending Approval"}
+            </p>
+            ${
+              userRole === "ATTENDEE"
+                ? `<button class="rsvp-btn mt-3 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition w-full" data-id="${evt.id}">RSVP</button>`
+                : ""
+            }
+          `;
+          eventsContainer.appendChild(card);
+        });
+
+        // Add RSVP button listeners
+        document.querySelectorAll(".rsvp-btn").forEach((btn) => {
+          btn.onclick = async () => {
+            const id = btn.dataset.id;
+            btn.disabled = true;
+            btn.textContent = "Sending...";
+
+            try {
+              const res = await fetch(`${API_BASE}/events/${id}/rsvp`, {
+                method: "POST",
+                headers: {
+                  Authorization: `Bearer ${userToken}`,
+                  "Content-Type": "application/json",
+                },
+              });
+
+              if (!res.ok) {
+                throw new Error("RSVP failed");
+              }
+
+              btn.textContent = "✓ RSVP Sent";
+              btn.classList.remove("bg-green-600", "hover:bg-green-700");
+              btn.classList.add("bg-gray-400");
+
+              setTimeout(() => fetchEvents(), 1000);
+            } catch (err) {
+              console.error("RSVP error:", err);
+              alert("RSVP failed. Please try again.");
+              btn.disabled = false;
+              btn.textContent = "RSVP";
+            }
+          };
+        });
+      }
+
+      // Create Event Modal
+      createBtn.onclick = () => {
+        createModal.classList.remove("hidden");
+        document.getElementById("create-event-error").textContent = "";
+      };
+
+      cancelCreate.onclick = () => {
+        createModal.classList.add("hidden");
+        createForm.reset();
+      };
+
+      // Close modal on outside click
+      createModal.onclick = (e) => {
+        if (e.target === createModal) {
+          cancelCreate.click();
+        }
+      };
+
+      // Create Event
+      createForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const title = document.getElementById("event-title").value.trim();
+        const date = document.getElementById("event-date").value;
+        const location = document.getElementById("event-location").value.trim();
+        const description = document
+          .getElementById("event-description")
+          .value.trim();
+        const errorEl = document.getElementById("create-event-error");
+        errorEl.textContent = "";
+
+        try {
+          const res = await fetch(`${API_BASE}/events`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${userToken}`,
+            },
+            body: JSON.stringify({
+              title,
+              date: new Date(date).toISOString(),
+              location,
+              description,
+            }),
+          });
+
+          const data = await res.json();
+
+          if (!res.ok) {
+            throw new Error(
+              data.error || data.message || "Failed to create event"
+            );
+          }
+
+          createModal.classList.add("hidden");
+          createForm.reset();
+          fetchEvents();
+        } catch (err) {
+          console.error("Create event error:", err);
+          errorEl.textContent = err.message || "Failed to create event";
+        }
+      });
+
+      // WebSocket Connection
+      function connectWebSocket() {
+        try {
+          socket = new WebSocket("ws://localhost:3000/ws");
+
+          socket.onopen = () => {
+            console.log("Connected to WebSocket");
+          };
+
+          socket.onmessage = (msg) => {
+            console.log("WebSocket update:", msg.data);
+            fetchEvents();
+          };
+
+          socket.onerror = (error) => {
+            console.error("WebSocket error:", error);
+          };
+
+          socket.onclose = () => {
+            console.log("WebSocket closed");
+            // Attempt to reconnect after 5 seconds
+            setTimeout(() => {
+              if (userToken) {
+                connectWebSocket();
+              }
+            }, 5000);
+          };
+        } catch (err) {
+          console.error("Failed to connect WebSocket:", err);
+        }
+      }
+    </script>
+  </body>
+</html>
