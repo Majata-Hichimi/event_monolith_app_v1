@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard - Eventful</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      :root {
+        --purple-primary: #6b21a8;
+        --purple-dark: #581c87;
+        --purple-light: #9333ea;
+        --purple-lighter: #a855f7;
+        --yellow-accent: #fbbf24;
+        --yellow-dark: #f59e0b;
+        --teal-accent: #14b8a6;
+        --bg-dark: #1a0b2e;
+        --bg-darker: #120821;
+        --bg-card: #2d1b4e;
+        --text-primary: #f3f4f6;
+        --text-secondary: #d1d5db;
+        --text-muted: #9ca3af;
+        --border-color: #4c1d95;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+        background: linear-gradient(
+          135deg,
+          var(--bg-darker) 0%,
+          var(--bg-dark) 100%
+        );
+        color: var(--text-primary);
+        line-height: 1.6;
+        min-height: 100vh;
+      }
+
+      .app-container {
+        display: grid;
+        grid-template-columns: 280px 1fr;
+        min-height: 100vh;
+      }
+
+      /* Sidebar */
+      .sidebar {
+        background: var(--bg-darker);
+        border-right: 1px solid var(--border-color);
+        padding: 32px 0;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .sidebar-header {
+        padding: 0 24px 32px;
+        border-bottom: 1px solid var(--border-color);
+        margin-bottom: 24px;
+      }
+
+      .logo {
+        font-size: 1.75rem;
+        font-weight: 800;
+        background: linear-gradient(
+          135deg,
+          var(--purple-light),
+          var(--purple-lighter)
+        );
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+
+      .nav-section {
+        padding: 0 16px;
+        margin-bottom: 8px;
+      }
+
+      .nav-label {
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        padding: 0 12px 8px;
+        letter-spacing: 0.5px;
+      }
+
+      .nav-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
+        border-radius: 12px;
+        color: var(--text-secondary);
+        text-decoration: none;
+        transition: all 0.2s ease;
+        margin-bottom: 4px;
+        font-size: 0.95rem;
+        font-weight: 500;
+      }
+
+      .nav-item:hover {
+        background: rgba(139, 92, 246, 0.1);
+        color: var(--text-primary);
+      }
+
+      .nav-item.active {
+        background: var(--purple-primary);
+        color: white;
+      }
+
+      .nav-item i {
+        width: 20px;
+        text-align: center;
+        font-size: 1.1rem;
+      }
+
+      .sidebar-footer {
+        margin-top: auto;
+        padding: 0 16px;
+      }
+
+      /* Main Content */
+      .main-content {
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto;
+      }
+
+      /* Top Bar */
+      .top-bar {
+        background: var(--bg-darker);
+        border-bottom: 1px solid var(--border-color);
+        padding: 20px 32px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+      }
+
+      .page-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--text-primary);
+      }
+
+      .top-bar-right {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+      }
+
+      .user-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 0.9rem;
+      }
+
+      .notification-badge {
+        position: relative;
+        cursor: pointer;
+        color: var(--text-secondary);
+        transition: color 0.2s;
+        font-size: 1.2rem;
+      }
+
+      .notification-badge:hover {
+        color: var(--yellow-accent);
+      }
+
+      .user-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: linear-gradient(
+          135deg,
+          var(--purple-light),
+          var(--purple-lighter)
+        );
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        color: white;
+        font-size: 0.9rem;
+      }
+
+      /* Content Area */
+      .content-area {
+        padding: 32px;
+        flex: 1;
+      }
+
+      /* Stats Grid */
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 24px;
+        margin-bottom: 32px;
+      }
+
+      .stat-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        padding: 24px;
+        transition: all 0.3s ease;
+      }
+
+      .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      }
+
+      .stat-card.purple {
+        border-left: 4px solid var(--purple-lighter);
+      }
+
+      .stat-card.yellow {
+        border-left: 4px solid var(--yellow-accent);
+      }
+
+      .stat-card.teal {
+        border-left: 4px solid var(--teal-accent);
+      }
+
+      .stat-label {
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        margin-bottom: 8px;
+        font-weight: 500;
+      }
+
+      .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--text-primary);
+      }
+
+      /* Section Card */
+      .section-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        padding: 28px;
+        margin-bottom: 24px;
+      }
+
+      .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+      }
+
+      .section-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--text-primary);
+      }
+
+      /* Event List */
+      .event-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+
+      .event-item {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 16px;
+        transition: all 0.3s ease;
+      }
+
+      .event-item:hover {
+        transform: translateX(4px);
+        border-color: var(--purple-light);
+        background: rgba(139, 92, 246, 0.05);
+      }
+
+      .event-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        margin-bottom: 12px;
+      }
+
+      .event-title {
+        font-size: 1.15rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 4px;
+      }
+
+      .event-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        margin-bottom: 12px;
+      }
+
+      .event-meta span {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .event-description {
+        color: var(--text-secondary);
+        margin-bottom: 16px;
+        line-height: 1.6;
+        font-size: 0.95rem;
+      }
+
+      .event-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 12px;
+        border-radius: 999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .badge.approved {
+        background: rgba(20, 184, 166, 0.2);
+        color: var(--teal-accent);
+      }
+
+      .badge.pending {
+        background: rgba(251, 191, 36, 0.2);
+        color: var(--yellow-accent);
+      }
+
+      /* Buttons */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 10px 20px;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: none;
+        font-family: inherit;
+        text-decoration: none;
+      }
+
+      .btn-yellow {
+        background: var(--yellow-accent);
+        color: var(--bg-darker);
+      }
+
+      .btn-yellow:hover {
+        background: var(--yellow-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(251, 191, 36, 0.4);
+      }
+
+      .btn-primary {
+        background: var(--purple-primary);
+        color: white;
+      }
+
+      .btn-primary:hover {
+        background: var(--purple-dark);
+        transform: translateY(-2px);
+      }
+
+      .btn-danger {
+        background: #dc2626;
+        color: white;
+      }
+
+      .btn-danger:hover {
+        background: #b91c1c;
+      }
+
+      .btn-small {
+        padding: 8px 16px;
+        font-size: 0.85rem;
+      }
+
+      .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: var(--text-muted);
+      }
+
+      .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 16px;
+        opacity: 0.3;
+      }
+
+      /* Toast Notification */
+      .toast {
+        position: fixed;
+        top: 24px;
+        right: 24px;
+        padding: 16px 24px;
+        border-radius: 12px;
+        color: white;
+        font-weight: 600;
+        z-index: 2000;
+        opacity: 0;
+        transform: translateX(400px);
+        transition: all 0.3s ease;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        max-width: 400px;
+      }
+
+      .toast.show {
+        opacity: 1;
+        transform: translateX(0);
+      }
+
+      .toast.success {
+        background: linear-gradient(135deg, #059669, #10b981);
+      }
+
+      .toast.error {
+        background: linear-gradient(135deg, #dc2626, #ef4444);
+      }
+
+      /* Responsive */
+      @media (max-width: 1024px) {
+        .app-container {
+          grid-template-columns: 1fr;
+        }
+
+        .sidebar {
+          display: none;
+        }
+
+        .stats-grid {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+
+      @media (max-width: 640px) {
+        .content-area {
+          padding: 20px;
+        }
+
+        .top-bar {
+          padding: 16px 20px;
+        }
+
+        .stats-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .event-header {
+          flex-direction: column;
+          gap: 8px;
+        }
+
+        .event-actions {
+          width: 100%;
+        }
+
+        .btn {
+          flex: 1;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="toast" class="toast"></div>
+
+    <div class="app-container">
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <div class="sidebar-header">
+          <div class="logo">Eventful</div>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-label">Main</div>
+          <a href="dashboard.html" class="nav-item active">
+            <i class="fas fa-home"></i>
+            <span>Dashboard</span>
+          </a>
+          <a href="events.html" class="nav-item">
+            <i class="fas fa-calendar-alt"></i>
+            <span>Events</span>
+          </a>
+          <a href="create-event.html" class="nav-item" id="create-link">
+            <i class="fas fa-plus-circle"></i>
+            <span>Create Event</span>
+          </a>
+          <a href="rsvps.html" class="nav-item">
+            <i class="fas fa-clipboard-list"></i>
+            <span>RSVPs</span>
+          </a>
+        </div>
+
+        <div class="sidebar-footer">
+          <a href="#" class="nav-item" id="logout-btn">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Logout</span>
+          </a>
+        </div>
+      </aside>
+
+      <!-- Main Content -->
+      <div class="main-content">
+        <!-- Top Bar -->
+        <div class="top-bar">
+          <h1 class="page-title">Dashboard</h1>
+          <div class="top-bar-right">
+            <div class="user-info">
+              <i class="fas fa-bell notification-badge"></i>
+              <div class="user-avatar" id="user-avatar">U</div>
+              <span>Welcome, <strong id="user-email">User</strong></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Content Area -->
+        <div class="content-area">
+          <!-- Stats Grid -->
+          <div class="stats-grid">
+            <div class="stat-card purple">
+              <div class="stat-label">Total Events</div>
+              <div class="stat-value" id="stat-total">0</div>
+            </div>
+            <div class="stat-card yellow">
+              <div class="stat-label">Upcoming Events</div>
+              <div class="stat-value" id="stat-upcoming">0</div>
+            </div>
+            <div class="stat-card teal">
+              <div class="stat-label">Active RSVPs</div>
+              <div class="stat-value" id="stat-rsvps">0</div>
+            </div>
+            <div class="stat-card purple">
+              <div class="stat-label">Your Role</div>
+              <div class="stat-value" id="stat-role" style="font-size: 1.5rem">
+                -
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Events -->
+          <div class="section-card">
+            <div class="section-header">
+              <h3 class="section-title">Recent Events</h3>
+              <a href="events.html" class="btn btn-yellow btn-small">
+                <i class="fas fa-arrow-right"></i>
+                View All
+              </a>
+            </div>
+            <ul class="event-list" id="event-list"></ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const API_BASE = "http://localhost:3000";
+      let socket = null;
+
+      // Check authentication
+      const token = localStorage.getItem("jwt-token");
+      if (!token) {
+        window.location.href = "login.html";
+      }
+
+      const userEmail = localStorage.getItem("user-email") || "User";
+      const userRole = localStorage.getItem("user-role") || "USER";
+
+      document.getElementById("user-email").textContent = userEmail;
+      document.getElementById("user-avatar").textContent = userEmail
+        .charAt(0)
+        .toUpperCase();
+      document.getElementById("stat-role").textContent = userRole;
+
+      // Hide create event link for attendees
+      if (userRole === "ATTENDEE") {
+        document.getElementById("create-link").style.display = "none";
+      }
+
+      // Toast notification
+      function showToast(message, type = "success") {
+        const toast = document.getElementById("toast");
+        toast.innerHTML = `<i class="fas fa-${
+          type === "success" ? "check-circle" : "exclamation-circle"
+        }"></i> ${message}`;
+        toast.className = `toast show ${type}`;
+        setTimeout(() => toast.classList.remove("show"), 3000);
+      }
+
+      // API Request
+      async function apiRequest(endpoint, method = "GET", body = null) {
+        const headers = {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        };
+
+        const options = { method, headers };
+        if (body) options.body = JSON.stringify(body);
+
+        try {
+          const response = await fetch(API_BASE + endpoint, options);
+          if (response.status === 401) {
+            localStorage.clear();
+            window.location.href = "login.html";
+            return;
+          }
+          const data = await response.json();
+          if (!response.ok)
+            throw new Error(data.error || data.message || "Request failed");
+          return data;
+        } catch (err) {
+          console.error("API error:", err);
+          showToast(err.message, "error");
+          throw err;
+        }
+      }
+
+      // Load Dashboard Data
+      async function loadDashboard() {
+        try {
+          const events = await apiRequest("/events");
+
+          // Update stats
+          document.getElementById("stat-total").textContent = events.length;
+
+          const now = new Date();
+          const upcoming = events.filter((e) => new Date(e.date) > now).length;
+          document.getElementById("stat-upcoming").textContent = upcoming;
+
+          const totalRSVPs = events.reduce(
+            (sum, e) => sum + (e.rsvps?.length || 0),
+            0
+          );
+          document.getElementById("stat-rsvps").textContent = totalRSVPs;
+
+          // Render recent events (last 5)
+          renderEvents(events.slice(0, 5));
+        } catch (err) {
+          console.error("Failed to load dashboard:", err);
+        }
+      }
+
+      // Render Events
+      function renderEvents(events) {
+        const container = document.getElementById("event-list");
+
+        if (!events || events.length === 0) {
+          container.innerHTML =
+            '<li class="empty-state"><i class="fas fa-calendar-times"></i><p>No events available</p></li>';
+          return;
+        }
+
+        container.innerHTML = events
+          .map((event) => {
+            const date = new Date(event.date).toLocaleString();
+            const rsvpCount = event.rsvps?.length || 0;
+
+            let actions = "";
+            if (userRole === "ATTENDEE") {
+              actions = `<button class="btn btn-primary btn-small" onclick="rsvpToEvent('${event.id}')">
+              <i class="fas fa-calendar-check"></i> RSVP
+            </button>`;
+            }
+
+            return `
+            <li class="event-item">
+              <div class="event-header">
+                <div>
+                  <div class="event-title">${event.title}</div>
+                  <span class="badge ${
+                    event.approved ? "approved" : "pending"
+                  }">
+                    <i class="fas fa-${event.approved ? "check" : "clock"}"></i>
+                    ${event.approved ? "Approved" : "Pending"}
+                  </span>
+                </div>
+              </div>
+              <div class="event-meta">
+                <span><i class="far fa-calendar"></i> ${date}</span>
+                <span><i class="fas fa-map-marker-alt"></i> ${
+                  event.location
+                }</span>
+                <span><i class="fas fa-users"></i> ${rsvpCount} RSVP${
+              rsvpCount !== 1 ? "s" : ""
+            }</span>
+              </div>
+              <p class="event-description">${event.description}</p>
+              ${actions ? `<div class="event-actions">${actions}</div>` : ""}
+            </li>
+          `;
+          })
+          .join("");
+      }
+
+      // RSVP to Event
+      window.rsvpToEvent = async (id) => {
+        try {
+          await apiRequest(`/events/${id}/rsvp`, "POST", { status: "GOING" });
+          showToast("RSVP sent successfully!", "success");
+          loadDashboard();
+        } catch (err) {
+          // Error already shown
+        }
+      };
+
+      // Logout
+      document.getElementById("logout-btn").addEventListener("click", (e) => {
+        e.preventDefault();
+        localStorage.clear();
+        if (socket?.readyState === WebSocket.OPEN) socket.close();
+        showToast("Logged out successfully", "success");
+        setTimeout(() => (window.location.href = "index.html"), 1000);
+      });
+
+      // WebSocket
+      function connectWebSocket() {
+        try {
+          const wsProtocol =
+            window.location.protocol === "https:" ? "wss:" : "ws:";
+          socket = new WebSocket(`${wsProtocol}//${window.location.host}/ws`);
+          socket.onopen = () => console.log("WebSocket connected");
+          socket.onmessage = () => loadDashboard();
+          socket.onclose = () => setTimeout(connectWebSocket, 5000);
+        } catch (err) {
+          console.error("WebSocket error:", err);
+        }
+      }
+
+      // Initialize
+      loadDashboard();
+      connectWebSocket();
+    </script>
+  </body>
+</html>

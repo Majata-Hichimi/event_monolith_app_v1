@@ -1,0 +1,191 @@
+import Elysia from 'elysia';
+import { loginHandler, signupHandler } from '../controllers/auth.controller.ts';
+
+// This function creates a 'plugin' that can be registered in index.ts
+// This follows the Single Responsibility Principle for routing.
+export const authRoutes = (app: Elysia) =>
+  app.group('/auth', (app) =>
+    app
+      .post('/signup', signupHandler, {
+        detail: {
+          summary: 'User Signup',
+          tags: ['Auth'],
+        },
+      })
+      .post('/login', loginHandler, {
+        detail: {
+          summary: 'User Login',
+          tags: ['Auth'],
+        },
+      })
+  );
+
+
+
+  import Elysia from 'elysia';
+import {
+  createEventHandler,
+  getAllEventsHandler,
+  updateEventHandler,
+  deleteEventHandler,
+  approveEventHandler,
+} from '../controllers/event.controller.ts';
+import { rsvpHandler } from '../controllers/rsvp.controller.ts';
+import { isAuthenticated, isAdmin, isOrganizer } from '../middleware/auth.middleware.ts';
+
+// We pass the main 'app' instance to the event handlers for websocket publishing
+export const eventRoutes = (app: Elysia) =>
+  app.group('/events', (app) =>
+    app
+      // Apply isAuthenticated middleware to all routes in this group
+      .onBeforeHandle(isAuthenticated)
+
+      // --- Event Routes ---
+
+      // GET /events - Get all approved events
+      .get('/', getAllEventsHandler, {
+        detail: {
+          summary: 'Get All Approved Events',
+          tags: ['Events'],
+        },
+      })
+
+      // POST /events - Create a new event (Organizers only)
+      .post('/', createEventHandler, {
+        beforeHandle: isOrganizer, // Role check
+        detail: {
+          summary: 'Create Event',
+          tags: ['Events'],
+        },
+      })
+
+      // PUT /events/:id - Update an event (Organizer or Admin)
+      .put('/:id', updateEventHandler, {
+        // Role check is handled inside the controller for complex logic
+        detail: {
+          summary: 'Update Event',
+          tags: ['Events'],
+        },
+      })
+
+      // DELETE /events/:id - Delete an event (Organizer or Admin)
+      .delete('/:id', deleteEventHandler, {
+        // Role check is handled inside the controller
+        detail: {
+          summary: 'Delete Event',
+          tags: ['Events'],
+        },
+      })
+
+      // --- Admin Route ---
+
+      // PUT /events/:id/approve - Approve an event (Admin only)
+      .put('/:id/approve', approveEventHandler, {
+        beforeHandle: isAdmin, // Role check
+        detail: {
+          summary: 'Approve Event (Admin)',
+          tags: ['Events', 'Admin'],
+        },
+      })
+
+      // --- RSVP Route ---
+
+      // POST /events/:id/rsvp - RSVP to an event (Attendees only)
+      .post('/:id/rsvp', rsvpHandler, {
+        // Role check handled in controller
+        detail: {
+          summary: 'RSVP to Event',
+          tags: ['RSVP'],
+        },
+      })
+  );
+
+
+
+
+  // Load environment variables first
+import { config } from "dotenv";
+config();
+
+import { Elysia } from "elysia";
+import { swagger } from "@elysiajs/swagger";
+import { jwt } from "@elysiajs/jwt";
+import { staticPlugin } from "@elysiajs/static";
+import { PrismaClient } from "@prisma/client";
+import { authRoutes } from "./routes/auth.routes";
+import { eventRoutes } from "./routes/event.routes";
+
+// 👇 ADD THIS IMPORT
+import { join } from "path";
+
+// Initialize Prisma Client (singleton)
+const db = new PrismaClient();
+
+// 👇 ADD THIS LINE
+const PUBLIC_DIR = join(process.cwd(), "public");
+
+const app = new Elysia()
+  // --- 1. Plugins & Setup ---
+  .use(
+    swagger({
+      path: "/swagger",
+      documentation: {
+        info: {
+          title: "Event Monolith API",
+          version: "1.0.0",
+        },
+      },
+    })
+  )
+  .use(
+    jwt({
+      name: "jwt",
+      secret: process.env.JWT_SECRET!, // Must be set in .env
+    })
+  )
+  // 👇 UPDATE THIS LINE
+  .use(staticPlugin({ prefix: "/", assets: PUBLIC_DIR }))
+  // 👇 ADD THIS LINE — critical for root path
+  .get("/", () => Bun.file(join(PUBLIC_DIR, "index.html")))
+
+  // --- 2. Context Decoration ---
+  .decorate("db", db)
+
+  // --- 3. WebSocket Route ---
+  .ws("/ws", {
+    open(ws) {
+      console.log("WebSocket client connected", ws.id);
+      ws.subscribe("events");
+    },
+    close(ws) {
+      console.log("WebSocket client disconnected", ws.id);
+      ws.unsubscribe("events");
+    },
+  })
+
+  // --- 4. HTTP Routes ---
+  .use(authRoutes)
+  .use(eventRoutes)
+
+  // --- 5. Server Lifecycle ---
+  .onStart(({ server }) => {
+    console.log(
+      `🔥 Server running at http://${server?.hostname}:${server?.port}`
+    );
+    console.log(
+      `📚 Swagger docs at http://${server?.hostname}:${server?.port}/swagger`
+    );
+  })
+  .onError(({ code, error, set }) => {
+    if (code !== "NOT_FOUND") {
+      console.error(`Error [${code}]: ${error.message}`);
+    }
+
+    if (error.name === "PrismaClientKnownRequestError") {
+      set.status = 400;
+      return { error: "Database error.", details: error.message };
+    }
+  })
+  .listen(process.env.PORT || 3000);
+
+export type App = typeof app;
